@@ -1,0 +1,31 @@
+name: Create v1.0.0 Milestone
+
+on: push
+
+jobs:
+  create-milestone:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create v1.0.0 milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { github, context } = require('@actions/github');
+            const repo = context.repo;
+
+            try {
+              await github.rest.issues.getMilestone({ ...repo, milestone_number: 1 });
+              console.log("Milestone v1.0.0 already exists");
+            } catch (error) {
+              if (error.status === 404) {
+                await github.rest.issues.createMilestone({
+                  ...repo,
+                  title: "v1.0.0",
+                  description: "Version 1.0.0 release",
+                  color: "0e8a16"
+                });
+                console.log("Created milestone v1.0.0");
+              } else {
+                console.error("Error creating milestone:", error);
+              }
+            }
