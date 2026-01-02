@@ -16,35 +16,6 @@ jobs:
             const repo = context.repo;
             const issue = context.payload.issue;
 
-            // Define all required labels
-            const requiredLabels = [
-              // Category
-              { name: 'bug', color: 'd73a4a', description: 'Something isn\'t working' },
-              { name: 'enhancement', color: 'a2eeef', description: 'New feature or request' },
-              { name: 'epic', color: '00563f', description: 'Large feature requiring multiple sub-tasks' },
-              { name: 'maintenance', color: 'fef2c0', description: 'Maintenance and housekeeping tasks' },
-              // Priority
-              { name: 'priority-critical', color: 'b60205', description: 'Critical priority issue' },
-              { name: 'priority-high', color: 'd93f0b', description: 'High priority issue' },
-              { name: 'priority-medium', color: 'e36209', description: 'Medium priority issue' },
-              { name: 'priority-low', color: '0e8a16', description: 'Low priority issue' },
-              // Status
-              { name: 'needs-triage', color: 'fbca04', description: 'Needs to be reviewed by maintainers' },
-              { name: 'needs-review', color: '0075ca', description: 'Awaiting review from maintainers' },
-              { name: 'first-time-contributor', color: '1d76db', description: 'Issue created by first-time contributor' }
-            ];
-
-            // Create missing labels
-            for (const label of requiredLabels) {
-              try {
-                await github.rest.issues.getLabel({ ...repo, name: label.name });
-              } catch (error) {
-                if (error.status === 404) {
-                  await github.rest.issues.createLabel({ ...repo, ...label });
-                }
-              }
-            }
-
             // Add initial needs-triage label
             await github.rest.issues.addLabels({ ...repo, issue_number: issue.number, labels: ['needs-triage'] });
 
@@ -204,21 +175,7 @@ jobs:
             const labels = issue.labels.map(l => l.name.toLowerCase());
 
             if (labels.includes('priority-high') || labels.includes('priority-critical')) {
-              // Check if v1.0.0 milestone exists
-              try {
-                await github.rest.issues.getMilestone({ ...repo, milestone_number: 1 });
-              } catch (error) {
-                if (error.status === 404) {
-                  // Create milestone if missing
-                  await github.rest.issues.createMilestone({
-                    ...repo,
-                    title: "v1.0.0",
-                    description: "Version 1.0.0 release",
-                    color: "0e8a16"
-                  });
-                }
-              }
-              // Set milestone
+              // Set milestone v1.0.0 (we'll create it manually if needed)
               await github.rest.issues.update({ ...repo, issue_number: issueNumber, milestone: 1 });
             }
 
