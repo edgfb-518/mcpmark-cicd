@@ -1,0 +1,65 @@
+name: Create Missing Labels
+
+on: push
+
+jobs:
+  create-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create all required labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { github, context } = require('@actions/github');
+            const repo = context.repo;
+
+            // Define all required labels
+            const requiredLabels = [
+              // Category
+              { name: 'bug', color: 'd73a4a', description: 'Something isn\'t working' },
+              { name: 'enhancement', color: 'a2eeef', description: 'New feature or request' },
+              { name: 'epic', color: '00563f', description: 'Large feature requiring multiple sub-tasks' },
+              { name: 'maintenance', color: 'fef2c0', description: 'Maintenance and housekeeping tasks' },
+              // Priority
+              { name: 'priority-critical', color: 'b60205', description: 'Critical priority issue' },
+              { name: 'priority-high', color: 'd93f0b', description: 'High priority issue' },
+              { name: 'priority-medium', color: 'e36209', description: 'Medium priority issue' },
+              { name: 'priority-low', color: '0e8a16', description: 'Low priority issue' },
+              // Status
+              { name: 'needs-triage', color: 'fbca04', description: 'Needs to be reviewed by maintainers' },
+              { name: 'needs-review', color: '0075ca', description: 'Awaiting review from maintainers' },
+              { name: 'first-time-contributor', color: '1d76db', description: 'Issue created by first-time contributor' }
+            ];
+
+            // Create missing labels
+            for (const label of requiredLabels) {
+              try {
+                await github.rest.issues.getLabel({ ...repo, name: label.name });
+                console.log(`Label ${label.name} already exists`);
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.createLabel({ ...repo, ...label });
+                  console.log(`Created label ${label.name}`);
+                } else {
+                  console.error(`Error creating label ${label.name}:`, error);
+                }
+              }
+            }
+
+            // Create v1.0.0 milestone
+            try {
+              await github.rest.issues.getMilestone({ ...repo, milestone_number: 1 });
+              console.log("Milestone v1.0.0 already exists");
+            } catch (error) {
+              if (error.status === 404) {
+                await github.rest.issues.createMilestone({
+                  ...repo,
+                  title: "v1.0.0",
+                  description: "Version 1.0.0 release",
+                  color: "0e8a16"
+                });
+                console.log("Created milestone v1.0.0");
+              } else {
+                console.error("Error creating milestone v1.0.0:", error);
+              }
+            }
