@@ -1,0 +1,25 @@
+name: Set Milestone for Issue #2
+
+on: push
+
+jobs:
+  set-milestone:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set v1.0.0 milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { github, context } = require('@actions/github');
+            const repo = context.repo;
+
+            // Find v1.0.0 milestone
+            const { data: milestones } = await github.rest.issues.listMilestones({ ...repo });
+            const v1Milestone = milestones.find(m => m.title === "v1.0.0");
+            if (v1Milestone) {
+              // Set it for issue #2
+              await github.rest.issues.update({ ...repo, issue_number: 2, milestone: v1Milestone.number });
+              console.log("Milestone set for issue #2");
+            } else {
+              console.log("v1.0.0 milestone not found");
+            }
