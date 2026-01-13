@@ -1,8 +1,7 @@
-const unusedVar = 'this is unused';
-console.log('this uses console');
-let str = "double quotes";
-let num = 10
+// Removed unused variable and console log, fixed quotes and semicolons
+let str = 'single quotes fixed';
+let num = 10;
 
 function test() {
-  return num
+  return num;
 }
